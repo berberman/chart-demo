@@ -1,5 +1,12 @@
 package cn.berberman.chart
 
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.ActivityInfo
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -19,12 +26,29 @@ class MainActivity : AppCompatActivity() {
 
 	private lateinit var chartView: LineChartView
 	private lateinit var helper: LineChartViewHelper
+	private var bluetoothManager: BluetoothManager? = null
+	private var bluetoothAdapter: BluetoothAdapter? = null
+	private val searchDevice = object : BroadcastReceiver() {
+		override fun onReceive(context: Context, intent: Intent) {
+
+		}
+
+	}
+	private val intentFilter = IntentFilter().apply {
+		addAction(BluetoothDevice.ACTION_FOUND)
+		addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED)
+		addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED)
+		addAction(BluetoothAdapter.ACTION_STATE_CHANGED)
+	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		window.setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN)
 		requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE
 		setContentView(R.layout.activity_main)
+		bluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager?
+		bluetoothAdapter = bluetoothManager?.adapter
+		registerReceiver(searchDevice, intentFilter)
 		chartView = chart
 		val values = Array(10) {
 			ColumnData(date[it], score[it].toFloat(), it.toFloat())
